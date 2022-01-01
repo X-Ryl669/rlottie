@@ -9,6 +9,7 @@ target_sources(rlottie
         "${CMAKE_CURRENT_LIST_DIR}/lottieparser.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/lottieanimation.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/lottiekeypath.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/JSON/ROString.cpp"
     )
 
 target_include_directories(rlottie
