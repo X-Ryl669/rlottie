@@ -34,10 +34,16 @@ namespace lottie
 	struct LottieAllocator
 	{
 		static void * alloc(size_t n) { return ::malloc(n); }
-		static void free(void * p)    { return ::free(p); }
+		static void free(void * p) { return ::free(p); }
 		static void * realloc(void * p , size_t n) { return ::realloc(p, n); }
 	};
-
+#else
+	struct LottieAllocator
+	{
+		static void * alloc(size_t n);
+		static void free(void * p);
+		static void * realloc(void * p , size_t n);
+	};
 #endif
 	/** An memory efficient vector class that implement std::vector interface.
 	  	Unlike std::vector, this implementation does not grow exponentially, so appending to 
@@ -70,7 +76,7 @@ namespace lottie
 		const static bool trivial = std::is_trivially_copyable<T>::value;
 
 	public:
-		vector() noexcept : first(nullptr), last(nullptr) {}
+		vector() noexcept : first(nullptr), last(nullptr), cap(0) {  }
 		explicit vector(size_type n) { allocate(n); }
 		vector(size_type n, const value_type& value) { allocate(n, value); }
 		vector(const this_type& x) { allocate(x.size()); assign(x.first, x.last); }
@@ -132,7 +138,7 @@ namespace lottie
 		void      push_back(const value_type& value) { if (size() == cap) reserve(cap + 1); new(last++) value_type(value); }
 		reference push_back() { if (size() == cap) resize(cap + 1); return *(last - 1); }
 		void      push_back(value_type&& value) { if (size() == cap) reserve(cap + 1); new(last++) value_type(std::move(value)); }
-		void      pop_back() { free(last - 1, last != nullptr ? 1 : 0); } // Don't reduce the capacity here?
+		void      pop_back() { if (last != nullptr) free(--last, 1); } // Don't reduce the capacity here?
 
 		template<class... Args>
 		reference emplace_back(Args&&... args) {
@@ -167,6 +173,11 @@ namespace lottie
 		size_t   cap {0};
 
 		void allocate(size_t nelem) {
+			if (!nelem) {
+				first = last = nullptr;
+				cap = 0;
+				return;
+			}
 			first = (value_type*)LottieAllocator::alloc(nelem * sizeof(value_type));
 			last = &first[nelem];
 			set(first, nelem);

@@ -61,7 +61,7 @@ public:
         view->setSize(vw, vw);
         view->show();
         view->play();
-        view->loop(true);
+        view->loop(false);
         mViews.push_back(std::move(view));
   }
 
