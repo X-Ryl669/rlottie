@@ -25,6 +25,7 @@
 #include <sstream>
 
 #include "lottiemodel.h"
+#include "vallocator.h"
 
 using namespace rlottie::internal;
 
@@ -40,7 +41,7 @@ public:
         static ModelCache singleton;
         return singleton;
     }
-    std::shared_ptr<model::Composition> find(const std::string &key)
+    std::shared_ptr<model::Composition> find(const VString &key)
     {
         std::lock_guard<std::mutex> guard(mMutex);
 
@@ -50,7 +51,7 @@ public:
 
         return (search != mHash.end()) ? search->second : nullptr;
     }
-    void add(const std::string &key, std::shared_ptr<model::Composition> value)
+    void add(const VString &key, std::shared_ptr<model::Composition> value)
     {
         std::lock_guard<std::mutex> guard(mMutex);
 
@@ -74,7 +75,7 @@ public:
 private:
     ModelCache() = default;
 
-    std::unordered_map<std::string, std::shared_ptr<model::Composition>> mHash;
+    std::unordered_map<VString, std::shared_ptr<model::Composition>> mHash;
     std::mutex                                                           mMutex;
     size_t mcacheSize{10};
 };
@@ -88,24 +89,24 @@ public:
         static ModelCache singleton;
         return singleton;
     }
-    std::shared_ptr<model::Composition> find(const std::string &)
+    std::shared_ptr<model::Composition> find(const VString &)
     {
         return nullptr;
     }
-    void add(const std::string &, std::shared_ptr<model::Composition>) {}
+    void add(const VString &, std::shared_ptr<model::Composition>) {}
     void configureCacheSize(size_t) {}
 };
 
 #endif
 
-static std::string dirname(const std::string &path)
+static VString dirname(const VString &path)
 {
     const char *ptr = strrchr(path.c_str(), '/');
 #ifdef _WIN32
     if (ptr) ptr = strrchr(ptr + 1, '\\');
 #endif
     int len = int(ptr + 1 - path.c_str());  // +1 to include '/'
-    return std::string(path, 0, len);
+    return VString(path, 0, len);
 }
 
 void model::configureModelCacheSize(size_t cacheSize)
@@ -113,7 +114,7 @@ void model::configureModelCacheSize(size_t cacheSize)
     ModelCache::instance().configureCacheSize(cacheSize);
 }
 
-std::shared_ptr<model::Composition> model::loadFromFile(const std::string &path,
+std::shared_ptr<model::Composition> model::loadFromFile(const VString &path,
                                                         bool cachePolicy)
 {
     if (cachePolicy) {
@@ -122,7 +123,7 @@ std::shared_ptr<model::Composition> model::loadFromFile(const std::string &path,
     }
 
     std::ifstream f;
-    f.open(path);
+    f.open(path.c_str());
 
     if (!f.is_open()) {
         vCritical << "failed to open file = " << path.c_str();
@@ -153,7 +154,7 @@ std::shared_ptr<model::Composition> model::loadFromFile(const std::string &path,
 }
 
 std::shared_ptr<model::Composition> model::loadFromData(
-    std::string jsonData, const std::string &key, std::string resourcePath,
+    VString jsonData, const VString &key, VString resourcePath,
     bool cachePolicy)
 {
     if (cachePolicy) {
@@ -176,7 +177,7 @@ std::shared_ptr<model::Composition> model::loadFromData(
 
 
 std::shared_ptr<model::Composition> model::loadFromData(
-    std::string jsonData, std::string resourcePath, model::ColorFilter filter)
+    VString jsonData, VString resourcePath, model::ColorFilter filter)
 {
 #ifdef LOTTIE_JSON_SUPPORT
     return internal::model::parse(jsonData.c_str(), jsonData.length(),

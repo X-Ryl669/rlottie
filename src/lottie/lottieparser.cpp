@@ -56,6 +56,7 @@
 #include <array>
 
 #include "lottiemodel.h"
+#include "vallocator.h"
 #include "rapidjson/document.h"
 
 RAPIDJSON_DIAG_PUSH
@@ -177,7 +178,7 @@ protected:
 
 class LottieParserImpl : public LookaheadParserHandler {
 public:
-    LottieParserImpl(char *str, std::string dir_path, model::ColorFilter filter)
+    LottieParserImpl(char *str, VString dir_path, model::ColorFilter filter)
         : LookaheadParserHandler(str),
           mColorFilter(std::move(filter)),
           mDirPath(std::move(dir_path))
@@ -195,7 +196,7 @@ public:
     int          GetInt();
     double       GetDouble();
     const char * GetString();
-    std::string  GetStringObject();
+    VString  GetStringObject();
     bool         GetBool();
     void         GetNull();
 
@@ -280,7 +281,7 @@ public:
     void parseShapeProperty(model::Property<model::PathData> &obj);
     void parseDashProperty(model::Dash &dash);
 
-    VInterpolator *interpolator(VPointF, VPointF, std::string);
+    VInterpolator *interpolator(VPointF, VPointF, VString);
 
     model::Color toColor(const char *str);
 
@@ -363,12 +364,12 @@ private:
     } mPathInfo;
 
 protected:
-    std::unordered_map<std::string, VInterpolator *> mInterpolatorCache;
+    std::unordered_map<VString, VInterpolator *> mInterpolatorCache;
     std::shared_ptr<model::Composition>              mComposition;
     model::Composition *                             compRef{nullptr};
     model::Layer *                                   curLayerRef{nullptr};
     VVector<model::Layer *>                      mLayersToUpdate;
-    std::string                                      mDirPath;
+    VString                                      mDirPath;
     void                                             SkipOut(int depth);
 };
 
@@ -532,12 +533,12 @@ const char *LottieParserImpl::GetString()
     return result;
 }
 
-std::string LottieParserImpl::GetStringObject()
+VString LottieParserImpl::GetStringObject()
 {
     auto str = GetString();
 
     if (str) {
-        return std::string(str);
+        return VString(str);
     }
 
     return {};
@@ -707,7 +708,7 @@ void LottieParserImpl::parseComposition()
 void LottieParserImpl::parseMarker()
 {
     EnterObject();
-    std::string comment;
+    VString comment;
     int         timeframe{0};
     int         duration{0};
     while (const char *key = NextObjectKey()) {
@@ -757,12 +758,12 @@ static constexpr const unsigned char B64index[256] = {
     25, 0,  0,  0,  0,  63, 0,  26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
     37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
 
-std::string b64decode(const char *data, const size_t len)
+VString b64decode(const char *data, const size_t len)
 {
     auto         p = reinterpret_cast<const unsigned char *>(data);
     int          pad = len > 0 && (len % 4 || p[len - 1] == '=');
     const size_t L = ((len + 3) / 4 - pad) * 4;
-    std::string  str(L / 4 * 3 + pad, '\0');
+    VString  str(L / 4 * 3 + pad, '\0');
 
     for (size_t i = 0, j = 0; i < L; i += 4) {
         int n = B64index[p[i]] << 18 | B64index[p[i + 1]] << 12 |
@@ -783,7 +784,7 @@ std::string b64decode(const char *data, const size_t len)
     return str;
 }
 
-static std::string convertFromBase64(const std::string &str)
+static VString convertFromBase64(const VString &str)
 {
     // usual header look like "data:image/png;base64,"
     // so need to skip till ','.
@@ -802,7 +803,7 @@ static std::string convertFromBase64(const std::string &str)
  */
 #include <sstream>
 template <class T>
-static std::string toString(const T &value)
+static VString toString(const T &value)
 {
     std::ostringstream os;
     os << value;
@@ -816,8 +817,8 @@ static std::string toString(const T &value)
 model::Asset *LottieParserImpl::parseAsset()
 {
     auto        asset = allocator().make<model::Asset>();
-    std::string filename;
-    std::string relativePath;
+    VString filename;
+    VString relativePath;
     bool        embededResource = false;
     EnterObject();
     while (const char *key = NextObjectKey()) {
@@ -1983,7 +1984,7 @@ bool LottieParserImpl::parseKeyFrameValue(
 
 VInterpolator *LottieParserImpl::interpolator(VPointF     inTangent,
                                               VPointF     outTangent,
-                                              std::string key)
+                                              VString key)
 {
     if (key.empty()) {
         std::array<char, 20> temp;
@@ -2010,7 +2011,7 @@ template <typename T, typename Tag>
 void LottieParserImpl::parseKeyFrame(model::KeyFrames<T, Tag> &obj)
 {
     struct ParsedField {
-        std::string interpolatorKey;
+        VString interpolatorKey;
         bool        interpolator{false};
         bool        value{false};
         bool        hold{false};
@@ -2181,7 +2182,7 @@ void LottieParserImpl::parseProperty(model::Property<T> &obj)
 
 class ObjectInspector {
 public:
-    void visit(model::Composition *obj, std::string level)
+    void visit(model::Composition *obj, VString level)
     {
         vDebug << " { " << level << "Composition:: a: " << !obj->isStatic()
                << ", v: " << obj->mVersion << ", stFm: " << obj->startFrame()
@@ -2193,7 +2194,7 @@ public:
         level.erase(level.end() - 1, level.end());
         vDebug << " } " << level << "Composition End\n";
     }
-    void visit(model::Layer *obj, std::string level)
+    void visit(model::Layer *obj, VString level)
     {
         vDebug << level << "{ " << layerType(obj->mLayerType)
                << ", name: " << obj->name() << ", id:" << obj->mId
@@ -2218,14 +2219,14 @@ public:
         vDebug << level << "} " << layerType(obj->mLayerType).c_str()
                << ", id: " << obj->mId << "\n";
     }
-    void visitChildren(model::Group *obj, std::string level)
+    void visitChildren(model::Group *obj, VString level)
     {
         level.append("\t");
         for (const auto &child : obj->mChildren) visit(child, level);
         if (obj->mTransform) visit(obj->mTransform, level);
     }
 
-    void visit(model::Object *obj, std::string level)
+    void visit(model::Object *obj, VString level)
     {
         switch (obj->type()) {
         case model::Object::Type::Repeater: {
@@ -2312,7 +2313,7 @@ public:
         }
     }
 
-    std::string matteType(model::MatteType type)
+    VString matteType(model::MatteType type)
     {
         switch (type) {
         case model::MatteType::None:
@@ -2335,7 +2336,7 @@ public:
             break;
         }
     }
-    std::string layerType(model::Layer::Type type)
+    VString layerType(model::Layer::Type type)
     {
         switch (type) {
         case model::Layer::Type::Precomp:
@@ -2366,7 +2367,7 @@ public:
 #endif
 
 std::shared_ptr<model::Composition> model::parse(char *             str,
-                                                 std::string        dir_path,
+                                                 VString        dir_path,
                                                  model::ColorFilter filter)
 {
     LottieParserImpl obj(str, std::move(dir_path), std::move(filter));

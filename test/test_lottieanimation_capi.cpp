@@ -5,10 +5,10 @@ class AnimationCApiTest : public ::testing::Test {
 public:
     void SetUp()
     {
-        animationInvalid = lottie_animation_from_file("wrong_file.json");
+        animationInvalid = lottie_animation_from_file(VString("wrong_file.json"));
         std::string filePath = DEMO_DIR;
         filePath +="mask.json";
-        animation = lottie_animation_from_file(filePath.c_str());
+        animation = lottie_animation_from_file(VString(filePath.c_str()));
 
     }
     void TearDown()

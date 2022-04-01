@@ -329,6 +329,12 @@ VDebug& VDebug::operator<<(std::string const& arg)
     return *this;
 }
 
+VDebug& VDebug::operator<<(VString const& arg)
+{
+    encode_c_string(arg.c_str(), arg.length());
+    return *this;
+}
+
 VDebug& VDebug::operator<<(int32_t arg)
 {
     encode<int32_t>(arg, TupleIndex<int32_t, SupportedTypes>::value);

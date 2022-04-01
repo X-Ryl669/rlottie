@@ -37,6 +37,8 @@
 #include "vpath.h"
 #include "vpathmesure.h"
 #include "vpoint.h"
+#include "vallocator.h"
+
 
 V_USE_NAMESPACE
 
@@ -197,7 +199,7 @@ public:
     const LOTLayerNode *renderTree() const;
     bool                render(const rlottie::Surface &surface);
     bool                renderPartial(const rlottie::Surface &surface);
-    void                setValue(const std::string &keypath, LOTVariant &value);
+    void                setValue(const VString &keypath, LOTVariant &value);
 
 private:
     SurfaceCache                        mSurfaceCache;

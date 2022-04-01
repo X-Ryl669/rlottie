@@ -32,6 +32,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include "vallocator.h"
 
 enum class LogLevel : uint8_t { INFO, WARN, CRIT, OFF };
 
@@ -58,6 +59,7 @@ public:
     VDebug& operator<<(unsigned long arg);
     VDebug& operator<<(double arg);
     VDebug& operator<<(std::string const& arg);
+    VDebug& operator<<(VString const& arg);
 
     template <size_t N>
     VDebug& operator<<(const char (&arg)[N])

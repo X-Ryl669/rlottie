@@ -28,6 +28,8 @@
 #include "vbitmap.h"
 #include "vpainter.h"
 #include "vraster.h"
+#include "vallocator.h"
+
 
 /* Lottie Layer Rules
  * 1. time stretch is pre calculated and applied to all the properties of the
@@ -106,7 +108,7 @@ renderer::Composition::Composition(std::shared_ptr<model::Composition> model)
     mViewSize = mModel->size();
 }
 
-void renderer::Composition::setValue(const std::string &keypath,
+void renderer::Composition::setValue(const VString &keypath,
                                      LOTVariant &       value)
 {
     LOTKeyPath key(keypath);

@@ -29,6 +29,7 @@
 #include <functional>
 #include <memory>
 #include <unordered_map>
+#include "vallocator.h"
 #include "varenaalloc.h"
 #include "vbezier.h"
 #include "vbrush.h"
@@ -45,7 +46,7 @@ namespace rlottie {
 
 namespace internal {
 
-using Marker = std::tuple<std::string, int, int>;
+using Marker = std::tuple<VString, int, int>;
 
 using LayerInfo = Marker;
 
@@ -511,11 +512,11 @@ struct Asset {
     bool                  isStatic() const { return mStatic; }
     void                  setStatic(bool value) { mStatic = value; }
     VBitmap               bitmap() const { return mBitmap; }
-    void                  loadImageData(std::string data);
-    void                  loadImagePath(std::string Path);
+    void                  loadImageData(VString data);
+    void                  loadImagePath(VString Path);
     Type                  mAssetType{Type::Precomp};
     bool                  mStatic{true};
-    std::string           mRefId;  // ref id
+    VString           mRefId;  // ref id
     VVector<Object *> mLayers;
     // image asset data
     int     mWidth{0};
@@ -563,14 +564,14 @@ public:
     };
 
 public:
-    std::string                              mVersion;
+    VString                              mVersion;
     VSize                                    mSize;
     long                                     mStartFrame{0};
     long                                     mEndFrame{0};
     float                                    mFrameRate{60};
     BlendMode                                mBlendMode{BlendMode::Normal};
     Layer *                                  mRootLayer{nullptr};
-    std::unordered_map<std::string, Asset *> mAssets;
+    std::unordered_map<VString, Asset *> mAssets;
 
     VVector<Marker> mMarkers;
     VArenaAlloc         mArenaAlloc{2048};
@@ -712,7 +713,7 @@ public:
     Asset *asset() const { return mExtra ? mExtra->mAsset : nullptr; }
     struct Extra {
         Color               mSolidColor;
-        std::string         mPreCompRefId;
+        VString         mPreCompRefId;
         Property<float>     mTimeRemap; /* "tm" */
         Composition *       mCompRef{nullptr};
         Asset *             mAsset{nullptr};
@@ -1130,26 +1131,26 @@ using ColorFilter = std::function<void(float &, float &, float &)>;
 
 void configureModelCacheSize(size_t cacheSize);
 
-std::shared_ptr<model::Composition> loadFromFile(const std::string &filePath,
+std::shared_ptr<model::Composition> loadFromFile(const VString &filePath,
                                                  bool cachePolicy);
 
-std::shared_ptr<model::Composition> loadFromData(std::string        jsonData,
-                                                 const std::string &key,
-                                                 std::string resourcePath,
+std::shared_ptr<model::Composition> loadFromData(VString        jsonData,
+                                                 const VString &key,
+                                                 VString resourcePath,
                                                  bool        cachePolicy);
 
-std::shared_ptr<model::Composition> loadFromData(std::string jsonData,
-                                                 std::string resourcePath,
+std::shared_ptr<model::Composition> loadFromData(VString jsonData,
+                                                 VString resourcePath,
                                                  ColorFilter filter);
 
 std::shared_ptr<model::Composition> loadFromROData(const char * data, const size_t len,
                                                    const char * resourcePath);
 
 #ifdef LOTTIE_JSON_SUPPORT
-std::shared_ptr<model::Composition> parse(const char *str, size_t len, std::string dir_path,
+std::shared_ptr<model::Composition> parse(const char *str, size_t len, VString dir_path,
                                           ColorFilter filter = {});
 #else
-std::shared_ptr<model::Composition> parse(char *str, std::string dir_path,
+std::shared_ptr<model::Composition> parse(char *str, VString dir_path,
                                           ColorFilter filter = {});
 #endif
 

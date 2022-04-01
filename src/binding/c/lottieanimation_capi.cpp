@@ -82,7 +82,7 @@ RLOTTIE_API Lottie_Animation_S *lottie_animation_from_file(const char *path)
 
 RLOTTIE_API Lottie_Animation_S *lottie_animation_from_data(const char *data, const char *key, const char *resourcePath)
 {
-    if (auto animation = Animation::loadFromData(data, key, resourcePath) ) {
+    if (auto animation = Animation::loadFromData(VString(data), VString(key), VString(resourcePath)) ) {
         Lottie_Animation_S *handle = new Lottie_Animation_S();
         handle->mAnimation = std::move(animation);
         return handle;

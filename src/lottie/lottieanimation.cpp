@@ -26,6 +26,7 @@
 
 #include <fstream>
 #include "vvector.h"
+#include "vallocator.h"
 
 using namespace rlottie;
 using namespace rlottie::internal;
@@ -72,8 +73,8 @@ public:
         return mLayerList;
     }
     const MarkerList &markers() const { return mModel->markers(); }
-    void              setValue(const std::string &keypath, LOTVariant &&value);
-    void              removeFilter(const std::string &keypath, Property prop);
+    void              setValue(const VString &keypath, LOTVariant &&value);
+    void              removeFilter(const VString &keypath, Property prop);
 
 private:
     mutable LayerInfoList                  mLayerList;
@@ -83,7 +84,7 @@ private:
     std::unique_ptr<renderer::Composition> mRenderer{nullptr};
 };
 
-void AnimationImpl::setValue(const std::string &keypath, LOTVariant &&value)
+void AnimationImpl::setValue(const VString &keypath, LOTVariant &&value)
 {
     if (keypath.empty()) return;
     mRenderer->setValue(keypath, value);
@@ -302,13 +303,13 @@ std::future<Surface> AnimationImpl::renderAsync(size_t    frameNo,
 }
 
 /**
- * \breif Brief abput the Api.
+ * \brief Brief about the Api.
  * Description about the setFilePath Api
  * @param path  add the details
  */
 std::unique_ptr<Animation> Animation::loadFromData(
-    std::string jsonData, const std::string &key,
-    const std::string &resourcePath, bool cachePolicy)
+    VString jsonData, const VString &key,
+    const VString &resourcePath, bool cachePolicy)
 {
     if (jsonData.empty()) {
         vWarning << "jason data is empty";
@@ -326,8 +327,19 @@ std::unique_ptr<Animation> Animation::loadFromData(
     return nullptr;
 }
 
-std::unique_ptr<Animation> Animation::loadFromData(std::string jsonData,
-                                                   std::string resourcePath,
+std::unique_ptr<Animation> Animation::loadFromData(
+    std::string jsonData, const std::string &key,
+    const std::string &resourcePath, bool cachePolicy)
+{
+    VString data(jsonData.data(), jsonData.length());
+    VString k(key.data(), key.length());
+    VString res(resourcePath.data(), resourcePath.length());
+    return loadFromData(data, k, res, cachePolicy);
+}
+
+
+std::unique_ptr<Animation> Animation::loadFromData(VString jsonData,
+                                                   VString resourcePath,
                                                    ColorFilter filter)
 {
     if (jsonData.empty()) {
@@ -362,7 +374,7 @@ std::unique_ptr<Animation> Animation::loadFromROData(const char * data, const si
     return nullptr;
 }
 
-std::unique_ptr<Animation> Animation::loadFromFile(const std::string &path,
+std::unique_ptr<Animation> Animation::loadFromFile(const VString &path,
                                                    bool cachePolicy)
 {
     if (path.empty()) {
@@ -378,6 +390,13 @@ std::unique_ptr<Animation> Animation::loadFromFile(const std::string &path,
     }
     return nullptr;
 }
+std::unique_ptr<Animation> Animation::loadFromFile(const std::string &path,
+                                                   bool cachePolicy)
+{
+    VString p(path.data(), path.length());
+    return loadFromFile(p, cachePolicy);    
+}
+
 
 void Animation::size(size_t &width, size_t &height) const
 {
@@ -440,53 +459,53 @@ const MarkerList &Animation::markers() const
     return d->markers();
 }
 
-void Animation::setValue(Color_Type, Property prop, const std::string &keypath,
+void Animation::setValue(Color_Type, Property prop, const VString &keypath,
                          Color value)
 {
     d->setValue(keypath,
                 LOTVariant(prop, [value](const FrameInfo &) { return value; }));
 }
 
-void Animation::setValue(Float_Type, Property prop, const std::string &keypath,
+void Animation::setValue(Float_Type, Property prop, const VString &keypath,
                          float value)
 {
     d->setValue(keypath,
                 LOTVariant(prop, [value](const FrameInfo &) { return value; }));
 }
 
-void Animation::setValue(Size_Type, Property prop, const std::string &keypath,
+void Animation::setValue(Size_Type, Property prop, const VString &keypath,
                          Size value)
 {
     d->setValue(keypath,
                 LOTVariant(prop, [value](const FrameInfo &) { return value; }));
 }
 
-void Animation::setValue(Point_Type, Property prop, const std::string &keypath,
+void Animation::setValue(Point_Type, Property prop, const VString &keypath,
                          Point value)
 {
     d->setValue(keypath,
                 LOTVariant(prop, [value](const FrameInfo &) { return value; }));
 }
 
-void Animation::setValue(Color_Type, Property prop, const std::string &keypath,
+void Animation::setValue(Color_Type, Property prop, const VString &keypath,
                          std::function<Color(const FrameInfo &)> &&value)
 {
     d->setValue(keypath, LOTVariant(prop, value));
 }
 
-void Animation::setValue(Float_Type, Property prop, const std::string &keypath,
+void Animation::setValue(Float_Type, Property prop, const VString &keypath,
                          std::function<float(const FrameInfo &)> &&value)
 {
     d->setValue(keypath, LOTVariant(prop, value));
 }
 
-void Animation::setValue(Size_Type, Property prop, const std::string &keypath,
+void Animation::setValue(Size_Type, Property prop, const VString &keypath,
                          std::function<Size(const FrameInfo &)> &&value)
 {
     d->setValue(keypath, LOTVariant(prop, value));
 }
 
-void Animation::setValue(Point_Type, Property prop, const std::string &keypath,
+void Animation::setValue(Point_Type, Property prop, const VString &keypath,
                          std::function<Point(const FrameInfo &)> &&value)
 {
     d->setValue(keypath, LOTVariant(prop, value));

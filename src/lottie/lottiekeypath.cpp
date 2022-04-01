@@ -2,17 +2,17 @@
 
 #include <sstream>
 
-LOTKeyPath::LOTKeyPath(const std::string &keyPath)
+LOTKeyPath::LOTKeyPath(const VString &keyPath)
 {
-    std::stringstream ss(keyPath);
-    std::string       item;
+    VStringStream ss(keyPath);
+    VString       item;
 
     while (getline(ss, item, '.')) {
         mKeys.push_back(item);
     }
 }
 
-bool LOTKeyPath::matches(const std::string &key, uint32_t depth)
+bool LOTKeyPath::matches(const VString &key, uint32_t depth)
 {
     if (skip(key)) {
         // This is an object we programatically create.
@@ -28,7 +28,7 @@ bool LOTKeyPath::matches(const std::string &key, uint32_t depth)
     return false;
 }
 
-uint32_t LOTKeyPath::nextDepth(const std::string key, uint32_t depth)
+uint32_t LOTKeyPath::nextDepth(const VString key, uint32_t depth)
 {
     if (skip(key)) {
         // If it's a container then we added programatically and it isn't a part
@@ -51,7 +51,7 @@ uint32_t LOTKeyPath::nextDepth(const std::string key, uint32_t depth)
     return depth;
 }
 
-bool LOTKeyPath::fullyResolvesTo(const std::string key, uint32_t depth)
+bool LOTKeyPath::fullyResolvesTo(const VString key, uint32_t depth)
 {
     if (depth > mKeys.size()) {
         return false;

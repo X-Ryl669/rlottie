@@ -23,22 +23,22 @@
 #ifndef LOTTIEKEYPATH_H
 #define LOTTIEKEYPATH_H
 
-#include <string>
+#include "vallocator.h"
 #include "vglobal.h"
 #include "vvector.h"
 
 class LOTKeyPath {
 public:
-    LOTKeyPath(const std::string &keyPath);
-    bool     matches(const std::string &key, uint32_t depth);
-    uint32_t nextDepth(const std::string key, uint32_t depth);
-    bool     fullyResolvesTo(const std::string key, uint32_t depth);
+    LOTKeyPath(const VString &keyPath);
+    bool     matches(const VString &key, uint32_t depth);
+    uint32_t nextDepth(const VString key, uint32_t depth);
+    bool     fullyResolvesTo(const VString key, uint32_t depth);
 
-    bool propagate(const std::string key, uint32_t depth)
+    bool propagate(const VString key, uint32_t depth)
     {
         return skip(key) ? true : (depth < size()) || (mKeys[depth] == "**");
     }
-    bool skip(const std::string &key) const { return key == "__"; }
+    bool skip(const VString &key) const { return key == "__"; }
 
 private:
     bool   isGlobstar(uint32_t depth) const { return mKeys[depth] == "**"; }
@@ -47,7 +47,7 @@ private:
     size_t size() const { return mKeys.size() - 1; }
 
 private:
-    VVector<std::string> mKeys;
+    VVector<VString> mKeys;
 };
 
 #endif  // LOTTIEKEYPATH_H

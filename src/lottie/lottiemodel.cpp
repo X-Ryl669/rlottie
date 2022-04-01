@@ -26,6 +26,8 @@
 #include <stack>
 #include "vimageloader.h"
 #include "vline.h"
+#include "vallocator.h"
+
 
 using namespace rlottie::internal;
 
@@ -336,13 +338,13 @@ void model::Gradient::update(std::unique_ptr<VGradient> &grad, int frameNo)
     }
 }
 
-void model::Asset::loadImageData(std::string data)
+void model::Asset::loadImageData(VString data)
 {
     if (!data.empty())
         mBitmap = VImageLoader::instance().load(data.c_str(), data.length());
 }
 
-void model::Asset::loadImagePath(std::string path)
+void model::Asset::loadImagePath(VString path)
 {
     if (!path.empty()) mBitmap = VImageLoader::instance().load(path.c_str());
 }

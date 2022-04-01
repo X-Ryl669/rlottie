@@ -26,6 +26,7 @@
 #include <future>
 #include <memory>
 #include "../src/vector/vvector.h"
+#include "../src/vector/vallocator.h"
 
 #if defined _WIN32 || defined __CYGWIN__
   #ifdef RLOTTIE_BUILD
@@ -255,7 +256,7 @@ private:
     }mDrawArea;
 };
 
-using MarkerList = VVector<std::tuple<std::string, int , int>>;
+using MarkerList = VVector<std::tuple<VString, int , int>>;
 /**
  *  @brief https://helpx.adobe.com/after-effects/using/layer-markers-composition-markers.html
  *  Markers exported form AE are used to describe a segmnet of an animation {comment/tag , startFrame, endFrame}
@@ -263,7 +264,7 @@ using MarkerList = VVector<std::tuple<std::string, int , int>>;
  *  start frame and duration of that segment.
  */
 
-using LayerInfoList = VVector<std::tuple<std::string, int , int>>;
+using LayerInfoList = VVector<std::tuple<VString, int , int>>;
 
 
 using ColorFilter = std::function<void(float &r , float &g, float &b)>;
@@ -286,7 +287,12 @@ public:
      *  @internal
      */
     static std::unique_ptr<Animation>
+    loadFromFile(const VString &path, bool cachePolicy=true);
+    static std::unique_ptr<Animation>
     loadFromFile(const std::string &path, bool cachePolicy=true);
+    static std::unique_ptr<Animation>
+    loadFromFile(const char * path, bool cachePolicy=true) { return loadFromFile(VString(path), cachePolicy); }
+    
 
     /**
      *  @brief Constructs an animation object from JSON string data.
@@ -305,8 +311,13 @@ public:
      *  @internal
      */
     static std::unique_ptr<Animation>
+    loadFromData(VString jsonData, const VString &key,
+                 const VString &resourcePath="", bool cachePolicy=true);
+
+    static std::unique_ptr<Animation>
     loadFromData(std::string jsonData, const std::string &key,
                  const std::string &resourcePath="", bool cachePolicy=true);
+
 
     /**
      *  @brief Constructs an animation object from JSON string read only data.
@@ -338,7 +349,7 @@ public:
      *  @internal
      */
     static std::unique_ptr<Animation>
-    loadFromData(std::string jsonData, std::string resourcePath, ColorFilter filter);
+    loadFromData(VString jsonData, VString resourcePath, ColorFilter filter);
 
     /**
      *  @brief Returns default framerate of the Lottie resource.
@@ -502,7 +513,7 @@ public:
      *  @internal
      */
     template<Property prop, typename AnyValue>
-    void setValue(const std::string &keypath, AnyValue value)
+    void setValue(const VString &keypath, AnyValue value)
     {
         setValue(MapType<std::integral_constant<Property, prop>>{}, prop, keypath, value);
     }
@@ -514,16 +525,23 @@ public:
      */
     ~Animation();
 
-private:
-    void setValue(Color_Type, Property, const std::string &, Color);
-    void setValue(Float_Type, Property, const std::string &, float);
-    void setValue(Size_Type, Property, const std::string &, Size);
-    void setValue(Point_Type, Property, const std::string &, Point);
+    /**
+     *  @brief copy constructor
+     * 
+     *  @internal
+     */
+    Animation(const Animation & animation);
 
-    void setValue(Color_Type, Property, const std::string &, std::function<Color(const FrameInfo &)> &&);
-    void setValue(Float_Type, Property, const std::string &, std::function<float(const FrameInfo &)> &&);
-    void setValue(Size_Type, Property, const std::string &, std::function<Size(const FrameInfo &)> &&);
-    void setValue(Point_Type, Property, const std::string &, std::function<Point(const FrameInfo &)> &&);
+private:
+    void setValue(Color_Type, Property, const VString &, Color);
+    void setValue(Float_Type, Property, const VString &, float);
+    void setValue(Size_Type, Property, const VString &, Size);
+    void setValue(Point_Type, Property, const VString &, Point);
+
+    void setValue(Color_Type, Property, const VString &, std::function<Color(const FrameInfo &)> &&);
+    void setValue(Float_Type, Property, const VString &, std::function<float(const FrameInfo &)> &&);
+    void setValue(Size_Type, Property, const VString &, std::function<Size(const FrameInfo &)> &&);
+    void setValue(Point_Type, Property, const VString &, std::function<Point(const FrameInfo &)> &&);
     /**
      *  @brief default constructor
      *
