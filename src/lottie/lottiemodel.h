@@ -553,6 +553,7 @@ public:
     VSize  size() const { return mSize; }
     void   processRepeaterObjects();
     void   updateStats();
+    std::unique_ptr<Composition> clone();
 
 public:
     struct Stats {

@@ -75,6 +75,7 @@ public:
     const MarkerList &markers() const { return mModel->markers(); }
     void              setValue(const VString &keypath, LOTVariant &&value);
     void              removeFilter(const VString &keypath, Property prop);
+    std::unique_ptr<AnimationImpl>   clone();
 
 private:
     mutable LayerInfoList                  mLayerList;
@@ -83,6 +84,12 @@ private:
     std::atomic<bool>                      mRenderInProgress;
     std::unique_ptr<renderer::Composition> mRenderer{nullptr};
 };
+
+std::unique_ptr<AnimationImpl> AnimationImpl::clone() {
+    AnimationImpl * t = new AnimationImpl();
+    if (mModel) t->init(mModel->clone());
+    return std::unique_ptr<AnimationImpl>(t);
+}
 
 void AnimationImpl::setValue(const VString &keypath, LOTVariant &&value)
 {
@@ -513,6 +520,9 @@ void Animation::setValue(Point_Type, Property prop, const VString &keypath,
 
 Animation::~Animation() = default;
 Animation::Animation() : d(std::make_unique<AnimationImpl>()) {}
+
+Animation::Animation(const Animation & animation) : d(animation.d->clone()) {}
+
 
 Surface::Surface(uint32_t *buffer, size_t width, size_t height,
                  size_t bytesPerLine)

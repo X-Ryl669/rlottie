@@ -80,6 +80,14 @@ RLOTTIE_API Lottie_Animation_S *lottie_animation_from_file(const char *path)
     }
 }
 
+RLOTTIE_API Lottie_Animation_S *lottie_animation_clone(const Lottie_Animation_S *obj)
+{
+    Lottie_Animation_S * handle = new Lottie_Animation_S();
+    handle->mAnimation.reset(new Animation(*obj->mAnimation));
+    return handle;
+}
+
+
 RLOTTIE_API Lottie_Animation_S *lottie_animation_from_data(const char *data, const char *key, const char *resourcePath)
 {
     if (auto animation = Animation::loadFromData(VString(data), VString(key), VString(resourcePath)) ) {

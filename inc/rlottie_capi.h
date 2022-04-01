@@ -91,6 +91,22 @@ RLOTTIE_API void lottie_shutdown(void);
  */
 RLOTTIE_API Lottie_Animation *lottie_animation_from_file(const char *path);
 
+
+/**
+ *  @brief Clone an animation object from an existing animation object.
+ *
+ *  @param[in] obj Pointer to Lottie animation 
+ *
+ *  @return Animation object that can build the contents of the
+ *          Lottie resource represented by file path.
+ *
+ *  @see lottie_animation_destroy()
+ *
+ *  @ingroup Lottie_Animation
+ *  @internal
+ */
+RLOTTIE_API Lottie_Animation *lottie_animation_clone(const Lottie_Animation *obj);
+
 /**
  *  @brief Constructs an animation object from JSON string data.
  *

@@ -159,6 +159,23 @@ void model::Composition::updateStats()
     visitor.visit(mRootLayer);
 }
 
+std::unique_ptr<model::Composition> model::Composition::clone()
+{
+    model::Composition * t = new model::Composition();
+    t->mVersion = mVersion;
+    t->mSize = mSize;
+    t->mStartFrame = mStartFrame;
+    t->mEndFrame = mEndFrame;
+    t->mFrameRate = mFrameRate;
+    t->mBlendMode = mBlendMode;
+    t->mRootLayer = mRootLayer;
+    t->mStats = mStats;
+    t->mAssets = mAssets;
+    t->mMarkers = mMarkers;
+    return std::unique_ptr<model::Composition>(t);
+}
+
+
 VMatrix model::Repeater::Transform::matrix(int frameNo, float multiplier) const
 {
     VPointF scale = mScale.value(frameNo) / 100.f;
